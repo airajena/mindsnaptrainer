@@ -141,3 +141,53 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Dialog / sheet entrances (non-timed UI only). Transform + opacity only. */
+@keyframes ui-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ui-pop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+@keyframes ui-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes ui-sheet-in-side {
+  from {
+    transform: translateX(100%);
+  }
+}
+.ui-fade[data-state="open"] {
+  animation: ui-fade-in var(--dur-base) var(--ease-out);
+}
+.ui-pop[data-state="open"] {
+  animation: ui-pop-in var(--dur-base) var(--ease-out);
+}
+.ui-sheet[data-state="open"] {
+  animation: ui-sheet-in var(--dur-base) var(--ease-in-out);
+}
+@media (min-width: 640px) {
+  .ui-sheet[data-state="open"] {
+    animation-name: ui-sheet-in-side;
+  }
+}
+
+/* In-app "Reduce motion" override (Settings), same effect as the OS setting. */
+:root[data-motion="reduce"] *:not(.motion-essential),
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="reduce"] .cell[data-pressed] {
+  transform: none;
+}

@@ -1,0 +1,19 @@
+.result-page {
+  min-block-size: 100dvh;
+}
+
+.result-slot {
+  --board-size: min(
+    100vw -
+    2 *
+    var(--gutter) -
+    env(safe-area-inset-left) -
+    env(safe-area-inset-right),
+    52dvh,
+    28rem
+  );
+}
+
+.result-pair {
+  --board-size: min(22rem, (100vw - 30rem) / 2);
+}

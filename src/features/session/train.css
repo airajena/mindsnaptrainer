@@ -1,0 +1,152 @@
+/*
+ * Session stage layout. Every row has a fixed height, so swapping labels and
+ * controls between phases can never move the board (CLS 0). The board is the
+ * largest square that fits width AND height, minus chrome and safe areas.
+ */
+
+.stage {
+  --header-h: 3.5rem;
+  --label-h: 3.25rem;
+  --controls-h: 8rem;
+  --chrome: calc(var(--header-h) + var(--label-h) + var(--controls-h) + 1.5rem);
+  --board-size: max(
+    12rem,
+    min(
+      100vw -
+      2 *
+      var(--gutter) -
+      env(safe-area-inset-left) -
+      env(safe-area-inset-right),
+      100dvh -
+      var(--chrome) -
+      env(safe-area-inset-top) -
+      env(safe-area-inset-bottom),
+      45rem
+    )
+  );
+
+  display: grid;
+  grid-template-columns: var(--board-size);
+  /*
+   * Spare height on tall phones: a little goes above the label (so the board
+   * sits nearer eye level), the rest to the controls row, whose buttons are
+   * pinned to its bottom — the thumb zone. Every row's size depends only on
+   * the viewport, never on phase content, so the board never moves.
+   */
+  grid-template-rows:
+    var(--header-h) minmax(0, 1fr) var(--label-h) var(--board-size)
+    minmax(var(--controls-h), 3fr);
+  grid-template-areas: "header" "." "label" "board" "controls";
+  justify-content: center;
+  block-size: 100dvh;
+  padding-block: calc(env(safe-area-inset-top) + 0.5rem) calc(env(safe-area-inset-bottom) + 1rem);
+  padding-inline: calc(env(safe-area-inset-left) + var(--gutter))
+    calc(env(safe-area-inset-right) + var(--gutter));
+  /* The session screen never scrolls: nothing can drift under the thumb. */
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.stage-header {
+  grid-area: header;
+}
+.stage-label {
+  grid-area: label;
+}
+.stage-board {
+  grid-area: board;
+  position: relative;
+}
+.stage-controls {
+  grid-area: controls;
+}
+
+/* Landscape phone: board on the left, sized to height; the rest in a column on the right. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .stage {
+    --side: min(18rem, 40vw);
+    --board-size: max(
+      10rem,
+      min(
+        100dvh -
+        1.5rem -
+        env(safe-area-inset-top) -
+        env(safe-area-inset-bottom),
+        100vw -
+        var(--side) -
+        3 *
+        var(--gutter) -
+        env(safe-area-inset-left) -
+        env(safe-area-inset-right)
+      )
+    );
+    grid-template-columns: var(--board-size) var(--side);
+    grid-template-rows: var(--header-h) var(--label-h) 1fr;
+    block-size: 100dvh;
+    grid-template-areas: "board header" "board label" "board controls";
+    column-gap: var(--gutter);
+    align-content: center;
+  }
+}
+
+/* Countdown digits / fixation dot, drawn over the board centre in a fixed box. */
+.countdown {
+  display: grid;
+  place-items: center;
+  inline-size: 6rem;
+  block-size: 6rem;
+  font-family: var(--font-mono);
+  font-size: clamp(2.5rem, calc(var(--board-size) * 0.14), 4.5rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.countdown[data-fixation="true"]::after {
+  content: "";
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+/* Optional memorize progress bar: a compositor-only scaleX animation that
+   starts in the reveal frame (same attribute flip) and vanishes on hide. */
+.memorize-bar {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -0.75rem;
+  block-size: 2px;
+  overflow: hidden;
+  visibility: hidden;
+}
+.memorize-bar > span {
+  display: block;
+  block-size: 100%;
+  background: var(--text-muted);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.board[data-reveal="true"] + .memorize-bar {
+  visibility: visible;
+}
+.board[data-reveal="true"] + .memorize-bar > span {
+  animation: memorize-bar var(--exposure-ms) linear forwards;
+}
+@keyframes memorize-bar {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Selection-limit feedback on the counter (transform only). */
+@keyframes counter-shake {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+.counter[data-shake="true"] {
+  animation: counter-shake 180ms var(--ease-out);
+}

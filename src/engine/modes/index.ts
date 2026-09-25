@@ -1,5 +1,7 @@
 import type { ModeId, ModeSummary, RoundConfig, RoundResult, SessionConfig } from "../types";
+import { capacityMode } from "./capacity";
 import { fixedMode } from "./fixed";
+import { speedMode } from "./speed";
 
 /**
  * A training mode decides the next round's parameters and when the session
@@ -30,6 +32,8 @@ function erase<S>(mode: Mode<S>): AnyMode {
 /** V1.1 adds `ladder` and `endurance` here. */
 const REGISTRY: Partial<Record<ModeId, AnyMode>> = {
   fixed: erase(fixedMode),
+  capacity: erase(capacityMode),
+  speed: erase(speedMode),
 };
 
 export function getMode(id: ModeId): AnyMode {

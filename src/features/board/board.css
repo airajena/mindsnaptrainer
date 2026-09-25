@@ -110,3 +110,56 @@
   place-items: center;
   pointer-events: none;
 }
+
+/* The countdown / fixation overlay disappears in the same frame the pattern
+   appears — it's the same attribute flip, not a second write. */
+.board[data-reveal="true"] .board-overlay {
+  visibility: hidden;
+}
+
+/* Result board states (static; see result-board.tsx). */
+.result-board .cell {
+  display: grid;
+  place-items: center;
+}
+.result-board .cell[data-state="on"],
+.result-board .cell[data-state="hit"] {
+  background: var(--hit);
+  box-shadow: none;
+}
+.result-board .cell[data-state="miss"] {
+  background: var(--cell);
+  box-shadow: none;
+  outline: 2px dashed var(--miss);
+  outline-offset: -3px;
+}
+.result-board .cell[data-state="false"] {
+  background: var(--false);
+  box-shadow: none;
+}
+.result-x {
+  inline-size: 55%;
+  block-size: 55%;
+  stroke: var(--bg);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  fill: none;
+}
+
+@media (forced-colors: active) {
+  .result-board .cell[data-state="on"],
+  .result-board .cell[data-state="hit"] {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+  .result-board .cell[data-state="miss"] {
+    outline-color: CanvasText;
+  }
+  .result-board .cell[data-state="false"] {
+    background: Canvas;
+    forced-color-adjust: none;
+  }
+  .result-x {
+    stroke: CanvasText;
+  }
+}

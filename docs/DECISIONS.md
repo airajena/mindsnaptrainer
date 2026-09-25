@@ -50,3 +50,21 @@ Playwright's WebKit build on Windows has irregular rAF (43–62 frames per secon
 
 ## D15 — Hit-test splits gaps exactly (M2)
 TECH_PLAN's `floor((x − left) / width · n)` puts cell boundaries up to 3g/8 off the gap centres. `hitTest` uses the cell pitch `(size + gap) / n` and a `g/2` shift, so each gap is split exactly down the middle. The gap is read once per gesture from computed style.
+
+## D16 — shadcn/ui sourced via `shadcn view`, not `shadcn init` (M3)
+`shadcn init` rewrites `globals.css` with its own theme variables, which conflict with the TECH_PLAN §3 tokens. Dialog (also used as the settings sheet), Switch, Slider, Tabs and ToggleGroup (the segmented control) were taken from the registry source and adapted to our tokens and `cn()`. Dependency: `radix-ui` (tree-shaken per primitive). No `class-variance-authority`, `clsx`, `tailwind-merge` or `tw-animate-css`; the few entrance animations are keyframes in `globals.css`.
+
+## D17 — COUNTDOWN_DONE fires when the fixation dot appears (M3)
+The countdown is drawn imperatively from rAF, so it can't disturb frame sampling. The machine's `countdown → memorize` transition is dispatched as the fixation dot appears, 300 ms before the reveal, rather than at the reveal. The React commit for that transition then settles before the timed frames. Countdown and memorize render identical markup (the board is `aria-hidden` in both), so the commit changes nothing on screen. The fixation overlay hides via CSS on `data-reveal="true"`, the same attribute flip as the reveal.
+
+## D18 — Tests default to end-of-session feedback (M6)
+Capacity and speed tests run 15–30 rounds. Per-round results would double the session length, and the staircase chart in the summary is the real feedback. Every round stays reviewable in the summary's round list.
+
+## D19 — Opening "End session?" mid-exposure voids the round (M3)
+The dialog would cover the board during a timed phase, so the round is voided first (reason `hidden`). Keep training, and the round is replayed with a new pattern.
+
+## D20 — Group controls use `<fieldset>`/`<legend>` (M4)
+Biome's a11y rules prefer semantic elements over `role="group"`. Steppers, config fields, chip groups and the test picker use `fieldset` + `legend` (visually styled as our label or `sr-only`).
+
+## D21 — Speed-test threshold is the arithmetic mean of reversal levels (M6)
+PRD §9.4 says "same stop rule", with a result like "18 cells: 840 ms". The estimate uses the same mean-of-last-6-reversals rule as capacity. Simulated observers (1,000 sessions per threshold) confirm it converges within 12% (geometric mean of estimates) at 400, 840 and 2500 ms.

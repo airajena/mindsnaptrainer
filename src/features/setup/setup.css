@@ -1,0 +1,17 @@
+.preview-slot {
+  --board-size: min(
+    100vw -
+    2 *
+    var(--gutter) -
+    env(safe-area-inset-left) -
+    env(safe-area-inset-right),
+    40dvh,
+    26rem
+  );
+}
+
+@media (min-width: 1024px) {
+  .preview-slot {
+    --board-size: min(26rem, 60dvh);
+  }
+}
