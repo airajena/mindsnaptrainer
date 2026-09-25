@@ -1,0 +1,87 @@
+/*
+ * Design tokens — the single source of colour, type, space and motion values.
+ * Components reference these (directly or via the Tailwind @theme mapping in
+ * globals.css). No raw hex anywhere else. See TECH_PLAN §3.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #08090b;
+  --bg-subtle: #0d0f12;
+  --surface: #121519;
+  --surface-2: #191d22;
+  --border: #242931;
+  --border-strong: #333a44;
+
+  /* Text */
+  --text: #f3f5f7;
+  --text-muted: #a0a8b4;
+  --text-faint: #6b7380;
+
+  /* Accent: used only for lit/selected cells and primary actions */
+  --accent: #3cf2b8;
+  --accent-hover: #6bf7ca;
+  --accent-ink: #03140e;
+
+  /* Board */
+  --cell: #15191e;
+  --cell-edge: #20252d;
+  --cell-lit: var(--accent);
+
+  /* Result overlay */
+  --hit: #3cf2b8;
+  --miss: #ffb020;
+  --false: #ff4d6d;
+  --danger: #ff4d6d;
+
+  /* Motion */
+  --dur-0: 0ms;
+  --dur-press: 70ms;
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Layout */
+  --gutter: 16px;
+  --section-space: clamp(4rem, 3rem + 6vw, 8rem);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+/* Light theme ships in V1.1; tokens are defined now so the seam exists. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --bg-subtle: #eef0f3;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #e3e6eb;
+  --border-strong: #c9ced6;
+  --text: #0b0d10;
+  --text-muted: #4a525e;
+  --text-faint: #6b7380;
+  --accent: #00a57a;
+  --accent-hover: #008f6a;
+  --accent-ink: #ffffff;
+  --cell: #eceef2;
+  --cell-edge: #dde1e7;
+  --cell-lit: #0b0d10;
+  --hit: #00a57a;
+  --miss: #b26b00;
+  --false: #d6284a;
+  --danger: #d6284a;
+}
