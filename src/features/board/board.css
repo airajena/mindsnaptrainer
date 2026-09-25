@@ -1,0 +1,112 @@
+/*
+ * The board. State changes (lit, selected) are instant: no transition on
+ * background/box-shadow, ever — a fade would blur the exposure time and add
+ * perceived input lag. See TECH_PLAN §7.4 and §8.1.
+ */
+
+.board {
+  --n: 8;
+  /* Approximate: slightly overestimates by one gap/n, which only affects the radius and gap. */
+  --cell-size: calc(var(--board-size, 20rem) / var(--n));
+  --gap: clamp(3px, calc(var(--cell-size) * 0.1), 8px);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+  gap: var(--gap);
+  inline-size: var(--board-size, 20rem);
+  block-size: var(--board-size, 20rem);
+  aspect-ratio: 1;
+  flex: none;
+  contain: layout paint style;
+  /* No double-tap zoom anywhere on a board; taps stay fast. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  /* No iOS long-press callout / magnifier. */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: contain;
+  outline: none;
+}
+
+/*
+ * Session boards lock every gesture (scroll, pinch-zoom, double-tap zoom) for
+ * the whole session so nothing on screen can move. Decorative boards (landing
+ * idle state, previews) leave page scroll alone.
+ */
+.board[data-gestures="locked"] {
+  touch-action: none;
+}
+
+/* Rows are for ARIA only; cells lay out directly in the board's grid. */
+.board-row {
+  display: contents;
+}
+
+.cell {
+  border-radius: calc(var(--cell-size) * 0.16);
+  background: var(--cell);
+  box-shadow: inset 0 0 0 1px var(--cell-edge);
+  /* Only transform may transition (press feedback). */
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.board[data-reveal="true"] .cell[data-lit],
+.cell[data-selected] {
+  background: var(--cell-lit);
+  box-shadow: none;
+}
+
+.cell[data-pressed] {
+  transform: scale(0.92);
+}
+
+/* Keyboard focus ring: inside the cell so it never overlaps a neighbour. */
+.board:focus-within .cell:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.board[data-interactive="true"] {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .board[data-interactive="true"] .cell:not([data-selected]):hover {
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    transition: none;
+  }
+  .cell[data-pressed] {
+    transform: none;
+  }
+}
+
+/* Windows High Contrast / forced colours: system colours plus borders. */
+@media (forced-colors: active) {
+  .cell {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  .board[data-reveal="true"] .cell[data-lit],
+  .cell[data-selected] {
+    background: Highlight;
+    border-color: Highlight;
+    forced-color-adjust: none;
+  }
+}
+
+/* Centre overlay for countdown digits / fixation dot: fixed box, never affects layout. */
+.board-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}

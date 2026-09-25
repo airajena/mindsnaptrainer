@@ -54,6 +54,14 @@
           "complexity": { "noImportantStyles": "off" }
         }
       }
+    },
+    {
+      "includes": ["src/features/board/**"],
+      "linter": {
+        "rules": {
+          "a11y": { "useSemanticElements": "off" }
+        }
+      }
     }
   ],
   "assist": {

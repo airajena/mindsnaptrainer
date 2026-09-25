@@ -35,3 +35,18 @@ TECH_PLAN says "seed 2–4 cluster centres, grow by random neighbour walks until
 
 ## D10 — Spread fallback is silent (M1)
 The spread generator falls back to uniform after 200 rejected draws. TECH_PLAN says to "log in dev", but the engine can't have side effects, so it doesn't log. The fallback only happens on dense small boards, where "spread" is impossible anyway.
+
+## D11 — Exposure reliability rule tightened (M2)
+PRD §13.4 voids a round when any frame gap exceeds 2× the frame period. That alone tolerates one dropped frame *at the hide boundary*, which can overshoot by up to 1.5 frames and still count, breaking the ±1-frame promise (PRD §2). An exposure is now reliable only if **both** hold: max gap ≤ 2p and |actual − target| ≤ p, each with 0.5 ms tolerance. The tolerance matters because a gap of exactly one dropped frame (2p) would otherwise flip-flop on float jitter, and WebKit reports whole-millisecond timestamps. The second condition also catches a mid-exposure refresh-rate change (ProMotion throttling). Unit-tested with a simulated display (`platform/exposure.test.ts`).
+
+## D12 — Gesture lock is a board prop (M2)
+TECH_PLAN puts `touch-action: none` on every board. Session boards keep that (`data-gestures="locked"`, the default). Decorative boards (the idle landing demo, setup previews) use `touch-action: manipulation`, so the page can still scroll when a thumb lands on them. The `touchstart` blocker only acts while input is enabled.
+
+## D13 — Performance e2e runs serially (M2)
+Timing and latency measurements are skewed by CPU contention from parallel Playwright workers. Firefox went from 7 dropped-frame exposures out of 50 with 6 workers to 1 out of 50 with one. Tests tagged `@timing`/`@perf` run in a second, single-worker pass (`pnpm test:e2e` does both).
+
+## D14 — Windows WebKit perf is reported, not asserted (M2)
+Playwright's WebKit build on Windows has irregular rAF (43–62 frames per second of exposure, 1 ms timestamps). It says nothing about Safari on macOS or iOS. On `win32` + WebKit, the dropped-frame rate and latency p95 are attached as annotations instead of asserted. The algorithm checks (±½ frame when no frame drops; nothing counted is outside ±1 frame) are still asserted there. CI runs on Linux, where all bars apply.
+
+## D15 — Hit-test splits gaps exactly (M2)
+TECH_PLAN's `floor((x − left) / width · n)` puts cell boundaries up to 3g/8 off the gap centres. `hitTest` uses the cell pitch `(size + gap) / n` and a `g/2` shift, so each gap is split exactly down the middle. The gap is read once per gesture from computed style.

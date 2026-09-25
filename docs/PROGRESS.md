@@ -21,3 +21,26 @@
 **Tests**: 201 passing. Table-driven: every event × every phase (88 cases). fast-check properties: scoring invariants, generator invariants for all three styles, bitset round-trip, reducer never throws on any 80-event sequence while keeping the selection, limit and round-count invariants. A purity guard test fails if `engine/` uses the clock, `Math.random`, browser globals, timers or React. Coverage on `engine/`: 99.2% statements, 98% branches, 100% functions.
 
 **Deferred**: `staircase.ts` and the capacity/speed modes to M6 per the build order. `personalBests` and `cellHeatmap` land with history in M5 / V1.1.
+
+## M2 — Board, timing pipeline, input pipeline, /lab (2026-09-26)
+
+**Built**
+- `platform/`: `frame-clock` (median rAF period), `exposure` (rAF reveal/hide as one `data-reveal` flip on the board root, measured `actualMs`, reliability rule D11, `clearLit`), `timing-guards` (void on page hidden, resize, orientation), `visibility`, `haptics`, `seed`.
+- `stores/selection-store`: per-board vanilla Zustand store; each cell subscribes to `selected[i]` and `focus === i`.
+- `features/board`: `Board` + memoised `Cell` (ARIA grid, positional labels only), `board.css` (no background transitions, touch CSS, forced-colours, reduced motion), `geometry` (dead-zone-free hit test, Bresenham line fill, focus movement), `use-board-input` (native non-passive `pointerdown`, toggle on touch-down, pointer capture, primary pointer only, coalesced events + line fill, first cell sets add/remove, keyboard roving focus, haptics), `timed-exposure` (guards + countdown-concurrent frame sampling + exposure + DOM scrub).
+- `/lab` (dev/test builds only): exposure bench (N runs, distribution, frames histogram, ±½ / ±1 frame rates, dropped-frame and void counts), tap-latency meter (p50/p95, Event Timing ≥ 16 ms counter), long-task counter.
+
+**Tests**: 230 unit tests (engine coverage unchanged at 98% branches), including a simulated-display suite for `runExposure` at 60/90/120/144 Hz with dropped frames. E2E: 28 parallel + 6 serial perf tests passing (Chromium, Firefox, WebKit, Pixel 7, iPhone 14 projects). Covered: toggle on pointer-down before release, fast 2-sample swipe fills a whole row, drag-to-deselect, gap clicks hit a cell, keyboard play, touch tap, CDP touch swipe with no page scroll, 50 × 1000 ms exposures.
+
+**Measurements** (headless, Windows 11 dev machine; not a real phone):
+
+| Scenario | Exposure, 100 × 1000 ms | Tap latency (event → next frame) |
+|---|---|---|
+| Chromium 153 desktop, 60 Hz | 100/100 at 60 frames; mean 999.96 ms; max error 0.1 ms; 0 unreliable | p50 2.2 ms, p95 7.0 ms (mouse) |
+| Firefox headless, 144 Hz | 100/100 within ½ frame; max error 3 ms; 10 flagged for dropped frames | p50 4 ms, p95 7 ms (mouse) |
+| Pixel 7 emulation, touch | 100/100 at 60 frames; max error 0.2 ms | p50 27.5 ms, p95 31.9 ms (CDP touch) |
+| Pixel 7 emulation, touch, 4× CPU throttle | 100/100 within ½ frame; max error 0.2 ms; 0 unreliable | p50 23.9 ms, p95 39.7 ms (CDP touch) |
+
+Latency breakdown (CDP touch, Pixel 7 emulation): our handler + React commit is 0.7 ms p50 / 2.6 ms p95 unthrottled and ~3.5 ms p50 at 4× throttle. The rest is the emulated touch pipeline (~10 ms before the event reaches JS) plus waiting for the next frame. Whether the "1 frame + 8 ms" budget holds needs a real phone.
+
+**Deferred / open**: real-device measurement (iPhone Safari, mid-range Android). Needs a phone on the LAN hitting `pnpm dev` or a test build at `/lab`.

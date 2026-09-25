@@ -1,0 +1,11 @@
+.lab-board-slot {
+  --board-size: min(
+    100vw -
+    2 *
+    var(--gutter) -
+    env(safe-area-inset-left) -
+    env(safe-area-inset-right),
+    60dvh,
+    26rem
+  );
+}
