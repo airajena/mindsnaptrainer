@@ -22,3 +22,16 @@ Light theme is V1.1. With one theme, `data-theme="dark"` is rendered statically 
 
 ## D7 — Lighthouse CI installed at M8 (M0)
 `@lhci/cli` pulls in a large tree and is only needed for the perf pass, so it's added in M8 rather than at scaffold time. The `lh` script is reserved now.
+
+## D8 — Engine type additions beyond TECH_PLAN §6.1 (M1)
+- `RoundPlan.attempt`: the replay count for a round index. The round seed is `hash(sessionSeed, index, attempt)`, so a voided round replays with a fresh pattern and the session stays reproducible from one seed.
+- The `recall` phase carries `selection` (sorted) alongside `events`. It's derivable from `events`, but every cell render and every TOGGLE needs it; a property test asserts the two always agree.
+- `RECALL_TIMEOUT { t }` event: PRD §10 says a timeout auto-submits the current selection, but `SUBMIT` with zero selections must be a no-op (PRD §20). A separate event keeps both rules, and `RoundResult.timedOut` records it.
+- `Mode.plan(state, config)` returns the next `RoundConfig`; the machine derives index and seed itself, so modes can't get seeding wrong.
+- `EXPOSURE_DONE` with `reliable: false` voids the round inside the reducer (`dropped-frames`), so the rule lives in one place instead of in each caller.
+
+## D9 — Clustered pattern generator (M1)
+TECH_PLAN says "seed 2–4 cluster centres, grow by random neighbour walks until k". Implemented as frontier growth: each step picks a random cluster with free neighbours and adds one of them at random. It always terminates with exactly k cells (a connected grid with a free cell always has a taken cell next to it).
+
+## D10 — Spread fallback is silent (M1)
+The spread generator falls back to uniform after 200 rejected draws. TECH_PLAN says to "log in dev", but the engine can't have side effects, so it doesn't log. The fallback only happens on dense small boards, where "spread" is impossible anyway.
