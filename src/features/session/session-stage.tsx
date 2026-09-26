@@ -10,6 +10,7 @@ import { isTyping } from "@/lib/keyboard";
 import { currentPlan } from "@/stores/session-store";
 import { settingsStore } from "@/stores/settings-store";
 import { RecallControls } from "./phase-recall-controls";
+import { roundCountdown } from "./round-countdown";
 import { useSession, useSessionState } from "./session-context";
 import { useRoundRunner } from "./use-round-runner";
 
@@ -42,7 +43,10 @@ export function SessionStage({ onRequestEnd }: { onRequestEnd: () => void }) {
   const counterRef = useRef<HTMLSpanElement>(null);
 
   const timed = kind === "countdown" || kind === "memorize";
-  useRoundRunner(session, timed ? plan : null, boardRef, overlayRef, countdown);
+  const auto = config?.roundStart === "auto";
+  const roundStyle =
+    plan && config ? roundCountdown(countdown, config.roundStart, plan) : countdown;
+  useRoundRunner(session, timed ? plan : null, boardRef, overlayRef, roundStyle);
 
   const begin = useCallback(() => session.dispatch({ type: "BEGIN_ROUND" }), [session]);
   const onToggle = useCallback(
@@ -59,9 +63,14 @@ export function SessionStage({ onRequestEnd }: { onRequestEnd: () => void }) {
     el.dataset.shake = "true";
   }, []);
 
-  // Ready: Space starts; auto-start after 1.5 s if configured.
+  // Ready: automatic round start begins straight away (rounds flow back to
+  // back); otherwise Space, a tap on the board or the button starts it.
   useEffect(() => {
     if (kind !== "ready") return;
+    if (auto) {
+      begin();
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === " " && !e.repeat && !isTyping(e)) {
         e.preventDefault();
@@ -69,12 +78,8 @@ export function SessionStage({ onRequestEnd }: { onRequestEnd: () => void }) {
       }
     };
     window.addEventListener("keydown", onKey);
-    const auto = config?.roundStart === "auto" ? setTimeout(begin, 1500) : null;
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      if (auto) clearTimeout(auto);
-    };
-  }, [kind, begin, config?.roundStart]);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [kind, begin, auto]);
 
   // Recall: focus the board so keyboard play works straight away.
   useEffect(() => {
@@ -149,11 +154,9 @@ export function SessionStage({ onRequestEnd }: { onRequestEnd: () => void }) {
       </div>
 
       <div className="stage-controls flex flex-col items-stretch justify-end gap-3">
-        {kind === "ready" && (
+        {kind === "ready" && !auto && (
           <>
-            <p className="text-center text-small text-text-muted">
-              {config.roundStart === "auto" ? "Starting…" : "Tap the board or press Space"}
-            </p>
+            <p className="text-center text-small text-text-muted">Tap the board or press Space</p>
             <button
               type="button"
               onClick={begin}

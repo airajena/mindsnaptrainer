@@ -10,6 +10,9 @@ import {
 } from "./helpers";
 
 test.describe("seeded session", () => {
+  // Any round here may be voided for dropped frames on a busy machine and
+  // replayed (each replay ≈ 3.5 s), so allow well beyond the 30 s default.
+  test.describe.configure({ timeout: 90_000 });
   test.skip(
     ({ isMobile }) => isMobile,
     "flow is engine-independent; mobile covers input separately",
@@ -80,10 +83,13 @@ test.describe("seeded session", () => {
   });
 
   test("keyboard-only: start, select with arrows + Space, submit", async ({ page }) => {
+    test.setTimeout(90_000);
     await startSession(page, "Warm-up");
     let attempt = 0;
     for (;;) {
       await page.keyboard.press("Space");
+      // Sit still through countdown + exposure: polling mid-flash can drop frames (D29).
+      await page.waitForTimeout(3_300);
       const recall = page.getByText("Select the squares", { exact: true });
       const replay = page.getByRole("button", { name: "Replay round" });
       await expect(recall.or(replay)).toBeVisible({ timeout: 15_000 });

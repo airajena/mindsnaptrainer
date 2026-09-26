@@ -208,14 +208,21 @@ export function ConfigForm({
         )}
       </Field>
 
-      <Field label="Round start">
+      <Field
+        label="Round start"
+        helper={
+          config.roundStart === "auto"
+            ? "Rounds run back to back: after the first countdown, each pattern follows a brief fixation dot."
+            : undefined
+        }
+      >
         {() => (
           <Segmented
             value={config.roundStart}
             onChange={(roundStart) => onChange({ roundStart })}
             options={[
               { value: "tap", label: "Tap to start" },
-              { value: "auto", label: "Automatic (1.5 s)" },
+              { value: "auto", label: "Automatic" },
             ]}
             label="Round start"
             className="w-full"
