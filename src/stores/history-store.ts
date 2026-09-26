@@ -8,8 +8,9 @@ import {
 } from "@/engine/history";
 import type { SessionState } from "@/engine/types";
 import { decode, encode, quarantineKey } from "@/platform/storage/envelope";
-import { HISTORY_KEY, HISTORY_VERSION, HistorySchema } from "@/platform/storage/history-schema";
+import { HistorySchema } from "@/platform/storage/history-schema";
 import { safeIdb } from "@/platform/storage/idb";
+import { HISTORY_KEY, HISTORY_VERSION } from "@/platform/storage/keys";
 import { uuidv7 } from "@/platform/uuid";
 import { pushNotice } from "./notice-store";
 

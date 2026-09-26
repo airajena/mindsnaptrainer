@@ -1,0 +1,160 @@
+/* Landing-only styles. Decorative loops pause off-screen and are static under reduced motion. */
+
+.demo-slot {
+  --board-size: min(
+    100vw -
+    2 *
+    var(--gutter) -
+    env(safe-area-inset-left) -
+    env(safe-area-inset-right),
+    22rem
+  );
+  scroll-margin-top: 2rem;
+}
+
+.demo-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  inline-size: var(--board-size);
+}
+
+.demo-board-wrap {
+  position: relative;
+  inline-size: var(--board-size);
+  block-size: var(--board-size);
+}
+
+/* Reserved height so the caption swap (idle → recall → result) never pushes the page. */
+.demo-caption {
+  min-block-size: 6.5rem;
+  color: var(--text-muted);
+  font-size: var(--text-small);
+}
+
+.demo-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.demo-play-label {
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  padding: 0.6rem 1.1rem;
+  font-weight: 500;
+  color: var(--text);
+  box-shadow: 0 0 32px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+.demo-play:active .demo-play-label {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .demo-play:hover .demo-play-label {
+    border-color: var(--accent);
+  }
+}
+
+/* Idle "pattern shimmer". */
+@keyframes demo-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.demo-idle .cell[data-state="on"] {
+  animation: demo-shimmer 3.2s var(--ease-in-out) infinite;
+  animation-delay: calc(var(--i) * -173ms);
+}
+
+/* How-it-works loops (4×4 boards). */
+@keyframes step-see {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  12%,
+  55% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes step-rebuild {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  6%,
+  85% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+.step-board .cell[data-state="on"] {
+  animation-duration: 4s;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(1, end);
+}
+.step-see .cell[data-state="on"] {
+  animation-name: step-see;
+}
+.step-rebuild .cell[data-state="on"] {
+  animation-name: step-rebuild;
+  animation-timing-function: var(--ease-out);
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+/* Specific enough to beat the per-animation rules above without !important. */
+[data-paused="true"] .board .cell[data-state="on"] {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-idle .cell[data-state="on"],
+  .step-board .cell[data-state="on"] {
+    animation: none;
+    opacity: 1;
+  }
+}
+:root[data-motion="reduce"] .demo-idle .cell[data-state="on"],
+:root[data-motion="reduce"] .step-board .cell[data-state="on"] {
+  animation: none;
+  opacity: 1;
+}
+
+/*
+ * No content-visibility here (TECH_PLAN §10 suggests it): on this short page
+ * the rendering win is tiny, and swapping placeholder heights for real ones
+ * breaks scroll-to-section and risks layout shift (DECISIONS D25).
+ */
+.landing-section {
+  padding-block: var(--section-space);
+}
+
+.cta-glow {
+  box-shadow: 0 8px 32px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Mobile sticky CTA: slides up once the hero leaves the viewport. */
+.sticky-cta {
+  transform: translateY(110%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.sticky-cta[data-visible="true"] {
+  transform: translateY(0);
+}

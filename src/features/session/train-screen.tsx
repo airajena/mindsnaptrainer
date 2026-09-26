@@ -1,15 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "zustand";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { SessionErrorBoundary } from "@/components/error-boundary";
 import type { PhaseKind, SessionConfig, SessionState } from "@/engine/types";
 import { SetupScreen } from "@/features/setup/setup-screen";
 import { TEST_HOOKS } from "@/lib/flags";
 import { formatPercent } from "@/lib/format";
 import { parseSeed, randomSeed } from "@/platform/seed";
-import { recordSession } from "@/stores/history-store";
 import { createSessionStore } from "@/stores/session-store";
 import { hydrateSettings, setLastConfig } from "@/stores/settings-store";
 import { PhaseResult } from "./phase-result";
@@ -18,6 +17,18 @@ import { SessionStage } from "./session-stage";
 import { SessionSummary } from "./session-summary";
 import { useSessionGuard } from "./use-session-guard";
 import "./train.css";
+
+// Dialogs (Radix) stay out of /train's first-load JS but are prefetched at
+// idle during setup, so nothing is fetched mid-session (TECH_PLAN §10).
+const ConfirmDialog = dynamic(
+  () => import("@/components/confirm-dialog").then((m) => m.ConfirmDialog),
+  { ssr: false },
+);
+const prefetchDialogs = () => {
+  void import("@/components/confirm-dialog");
+  void import("@/features/settings/settings-sheet");
+  void import("@/features/setup/save-preset-dialog");
+};
 
 const TIMED: ReadonlySet<PhaseKind> = new Set(["countdown", "memorize"]);
 
@@ -38,7 +49,9 @@ function TrainScreenInner() {
   const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
-    hydrateSettings();
+    void hydrateSettings();
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
+    idle(prefetchDialogs);
   }, []);
 
   const start = useCallback(
@@ -69,7 +82,11 @@ function TrainScreenInner() {
         setAnnouncement(announce(state));
         if (state.phase.kind === "complete" && prev.phase.kind !== "complete") {
           setCallouts([]);
-          void recordSession(state).then(setCallouts);
+          // History (IndexedDB + schemas) loads only now — never mid-session,
+          // and it stays out of /train's first-load JS.
+          void import("@/stores/history-store")
+            .then((m) => m.recordSession(state))
+            .then(setCallouts);
         }
       }),
     [session],

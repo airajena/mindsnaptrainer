@@ -26,7 +26,9 @@ pnpm dev            # http://localhost:3000
 | `pnpm typecheck` | `tsc --noEmit` (strict) |
 | `pnpm lint` / `pnpm format` | Biome check / fix |
 | `pnpm test` / `pnpm test:coverage` | Vitest unit + property tests |
-| `pnpm test:e2e` | Playwright (run `pnpm build:test` first) |
+| `pnpm test:e2e` | Playwright: parallel pass, then timing/perf specs serially (run `pnpm build:test` first) |
+| `pnpm check:bundles` | First-load JS budgets (after `pnpm build`) |
+| `pnpm lh` | Lighthouse CI on `/`, `/privacy`, `/train` (after `pnpm build`; set `CHROME_PATH` if Chrome isn't installed) |
 
 ## Architecture
 
@@ -39,3 +41,11 @@ Functional core, imperative shell:
 - `src/app/` — Next.js routes.
 
 Dependency direction: `app → features → stores → engine`; `platform` is used by `features` and `stores`.
+
+## Playing on a phone
+
+`pnpm build && pnpm start`, then open `http://<your-computer's-LAN-IP>:3000` on a phone on the same Wi-Fi. `/lab` (dev and `pnpm build:test` builds only) measures exposure timing and tap latency on the device.
+
+## Fonts
+
+`src/app/fonts/` holds Geist (SIL OFL, see LICENSE.txt there) subset to Latin + the symbols the UI uses. If you add text with other characters, regenerate the subsets (DECISIONS D27).

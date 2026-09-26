@@ -3,14 +3,9 @@ import { DEFAULT_SESSION_CONFIG, normalizeSessionConfig } from "@/engine/config"
 import { DEFAULT_PRESET_ID, findPreset } from "@/engine/presets";
 import type { SessionConfig } from "@/engine/types";
 import { decode, encode, quarantineKey } from "@/platform/storage/envelope";
+import { SETTINGS_KEY, SETTINGS_VERSION } from "@/platform/storage/keys";
 import { safeLocal } from "@/platform/storage/local";
-import {
-  type SavedPreset,
-  SETTINGS_KEY,
-  SETTINGS_VERSION,
-  type Settings,
-  SettingsSchema,
-} from "@/platform/storage/schema";
+import type { SavedPreset, Settings } from "@/platform/storage/schema";
 import { uuidv7 } from "@/platform/uuid";
 import { pushNotice } from "./notice-store";
 
@@ -34,10 +29,22 @@ export const settingsStore = createStore<Settings & { hydrated: boolean }>(() =>
   hydrated: false,
 }));
 
-/** Loads persisted settings once, on the client. Corrupt data is quarantined, never fatal. */
-export function hydrateSettings(): void {
-  if (settingsStore.getState().hydrated) return;
+let hydrating: Promise<void> | null = null;
+
+/**
+ * Loads persisted settings once, on the client. Corrupt data is quarantined,
+ * never fatal. The Zod schema is imported on demand so validation code stays
+ * out of every page's first-load JS (DECISIONS D24); callers already wait on
+ * `hydrated`.
+ */
+export function hydrateSettings(): Promise<void> {
+  hydrating ??= loadSettings();
+  return hydrating;
+}
+
+async function loadSettings(): Promise<void> {
   const raw = safeLocal.get(SETTINGS_KEY);
+  const { SettingsSchema } = await import("@/platform/storage/schema");
   const decoded = decode(raw, SettingsSchema, SETTINGS_VERSION);
   if (decoded.kind === "ok") {
     settingsStore.setState({ ...decoded.data, hydrated: true });

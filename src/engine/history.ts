@@ -250,3 +250,60 @@ export function monthKey(ms: number): string {
   const year = yoe + era * 400 + (month <= 2 ? 1 : 0);
   return `${year}-${String(month).padStart(2, "0")}`;
 }
+
+/** One config signature's history, for the progress page. */
+export interface SignatureGroup {
+  signature: string;
+  label: string;
+  modeId: SessionConfig["modeId"];
+  sessions: number;
+  lastAt: number;
+  /** Fixed: mean accuracy per session. Tests: threshold per session (sessions without one are skipped). */
+  series: { at: number; value: number }[];
+  /** Fixed: best mean accuracy. Capacity: highest k*. Speed: lowest t*. Null if none. */
+  best: number | null;
+  /** Fixed only: most perfect rounds in one session. */
+  bestPerfect: number | null;
+}
+
+/** Groups sessions by signature, most recently played first. */
+export function groupBySignature(sessions: readonly StoredSession[]): SignatureGroup[] {
+  const map = new Map<string, StoredSession[]>();
+  for (const s of sessions) {
+    const list = map.get(s.signature);
+    if (list) list.push(s);
+    else map.set(s.signature, [s]);
+  }
+  const groups: SignatureGroup[] = [];
+  for (const [signature, list] of map) {
+    const sorted = [...list].sort((a, b) => a.completedAt - b.completedAt);
+    const first = sorted[0]!;
+    const series = sorted.flatMap((s) => {
+      const v = seriesValue(s);
+      return v === null ? [] : [{ at: s.completedAt, value: v }];
+    });
+    const values = series.map((p) => p.value);
+    const best =
+      values.length === 0
+        ? null
+        : first.modeId === "speed"
+          ? Math.min(...values)
+          : Math.max(...values);
+    groups.push({
+      signature,
+      label: signatureLabel(signature),
+      modeId: first.modeId,
+      sessions: sorted.length,
+      lastAt: sorted[sorted.length - 1]!.completedAt,
+      series,
+      best,
+      bestPerfect:
+        first.modeId === "fixed" ? Math.max(...sorted.map((s) => s.perfectRounds)) : null,
+    });
+  }
+  return groups.sort((a, b) => b.lastAt - a.lastAt);
+}
+
+function seriesValue(s: StoredSession): number | null {
+  return s.mode.kind === "fixed" ? s.meanAccuracy : s.mode.threshold;
+}

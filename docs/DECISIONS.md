@@ -68,3 +68,27 @@ Biome's a11y rules prefer semantic elements over `role="group"`. Steppers, confi
 
 ## D21 — Speed-test threshold is the arithmetic mean of reversal levels (M6)
 PRD §9.4 says "same stop rule", with a result like "18 cells: 840 ms". The estimate uses the same mean-of-last-6-reversals rule as capacity. Simulated observers (1,000 sessions per threshold) confirm it converges within 12% (geometric mean of estimates) at 400, 840 and 2500 ms.
+
+## D22 — PRD §19 JS totals can't be met on the mandated stack; app budgets enforced instead (M7)
+Next.js 16 + React 19 alone cost **134.5 KB gzip** of first-load JS on every page (React DOM ≈ 70, Next router ≈ 43, runtime ≈ 21; measured by `scripts/check-bundles.mjs`, excluding `nomodule` polyfills). That exceeds PRD §19's 90 KB landing budget before any app code, so the "≤ 90 / ≤ 150 KB" totals are unattainable with the non-negotiable stack. What we control is enforced in CI instead: our own JS on top of the framework floor — landing 4.2 KB (budget 10), `/train` 45.6 KB (55), `/progress` 32.6 KB (40), `/privacy` 0 (5). The PRD totals are still printed on every run. **Needs a product decision**: revise the PRD budgets to "framework + N KB", or change stack.
+
+## D23 — No Motion library (M7)
+`motion/react` with `LazyMotion` still added ~45 KB gzip to the landing's first load (`AnimatePresence` + `m`), for one slide-in bar. It's replaced by a CSS transform transition. Entrance animations elsewhere are CSS keyframes (transform/opacity only, reduced-motion aware). The dependency was removed. If the stack must include Motion, it belongs behind a dynamic import on `/train` results only.
+
+## D24 — `zod/mini`, schemas loaded on demand (M7)
+Full Zod v4 put ~50 KB gzip on every app route. `zod/mini` (same validation, functional API) cut it to ~17 KB, and the schemas are now `import()`ed only when settings or history are actually parsed, so validation code isn't in any route's first-load JS. The storage decoder accepts any object with `safeParse`.
+
+## D25 — No `content-visibility` on landing sections (M7)
+TECH_PLAN §10 suggests it. On this short page the rendering win is negligible, and placeholder-height swaps broke scroll-to-section and risked layout shift.
+
+## D26 — `--text-faint` raised to #7D8593 (M8)
+TECH_PLAN's #6B7380 is 3.5–4.2:1 on our surfaces. It's meant for decorative text only, but helper text and chart labels need it, and axe flagged it. #7D8593 is the dimmest grey that reaches 4.5:1 on every dark surface (4.55 on `--surface-2`) while staying clearly dimmer than `--text-muted`. Light theme (V1.1): #5F6773.
+
+## D27 — Self-subsetted Geist fonts, mono not preloaded, CSS inlined (M8)
+The `geist` package ships full-charset variable fonts (68 KB + 70 KB). Lighthouse's simulated LCP charges every byte requested before first paint, and these dominated. The fonts are subset with fontTools to Basic Latin, Latin-1 and the punctuation/symbols the UI uses (all OpenType features incl. `tnum`, `wght` axis kept): 32 KB + 33 KB, committed in `src/app/fonts/` with the OFL licence. Sans is preloaded with a metric-matched fallback; mono isn't preloaded. `experimental.inlineCss` inlines the ~12 KB of Tailwind CSS, removing the render-blocking stylesheet round-trips. Regenerate the subsets if new non-Latin characters are added to the UI (a character-coverage check is in PROGRESS).
+
+## D28 — Lighthouse asserts the median run (M8)
+Lighthouse CI's default aggregation passes on the *best* of 3 runs, which hid a borderline landing performance score. The config asserts the median run: performance ≥ 0.90 is an error, ≥ 0.95 (PRD) a warning, the other three categories ≥ 0.95 and CLS = 0 are errors. Measured median: landing performance 0.93 (runs 0.91–0.96) with simulated LCP 2.7–3.2 s; **observed** LCP is 0.43 s. The remaining gap is the framework JS floor (D22) inside Lighthouse's simulation.
+
+## D29 — Perf-sensitive e2e: no polling during exposures, serial pass (M8)
+Playwright's `expect` polls the page over the automation protocol. Done while a pattern is on screen, those round-trips cost Firefox a frame at 144 Hz, and the app correctly voids the round. Tests now sit still through countdown + exposure before asserting. Timing-sensitive specs (`@timing`, `@perf`, including the landing demo) run in the single-worker pass. Session tests replay voided rounds with the next attempt's seed, like a player would.

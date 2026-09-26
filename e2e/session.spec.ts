@@ -45,6 +45,8 @@ test.describe("seeded session", () => {
   test("tab switch during the countdown voids the round and replays it with a new pattern", async ({
     page,
   }) => {
+    // Two rounds' worth of countdown + exposure, plus possible dropped-frame replays.
+    test.setTimeout(90_000);
     await startSession(page, "Warm-up");
     await page.getByRole("button", { name: /^Start round/ }).click();
     await page.evaluate(() => {

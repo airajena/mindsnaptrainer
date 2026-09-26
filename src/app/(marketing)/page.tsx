@@ -1,12 +1,36 @@
-// Placeholder until M7 builds the real landing page (PRD §11.1).
+import type { Metadata } from "next";
+import { Hero } from "@/features/landing/hero";
+import {
+  Faq,
+  FinalCta,
+  HonestNumbers,
+  HowItWorks,
+  Modes,
+  PrivacyBand,
+  Thumb,
+} from "@/features/landing/sections";
+import { StickyCta } from "@/features/landing/sticky-cta";
+import { SITE } from "@/lib/site";
+import "@/features/landing/landing.css";
+
+export const metadata: Metadata = {
+  title: { absolute: SITE.title },
+  alternates: { canonical: "/" },
+};
+
+/** Landing (PRD §11.1): a static Server Component; the demo and sticky CTA are client islands. */
 export default function LandingPage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center gap-6 px-gutter">
-      <p className="label-caps text-label text-text-muted">Visual memory trainer</p>
-      <h1 className="text-display">One second. Eighteen squares. Remember them all.</h1>
-      <p className="prose-width text-text-muted">
-        A pattern flashes. It disappears. You rebuild it.
-      </p>
-    </main>
+    <>
+      <Hero />
+      <HowItWorks />
+      <Modes />
+      <HonestNumbers />
+      <Thumb />
+      <PrivacyBand />
+      <Faq />
+      <FinalCta />
+      <StickyCta />
+    </>
   );
 }

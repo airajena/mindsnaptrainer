@@ -1,10 +1,15 @@
-import type { z } from "zod";
-
 /**
  * Every persisted payload is `{ schemaVersion, data }`. On load: parse the
  * envelope, run migrations up to the current version, validate with Zod.
  * Anything that fails is reported as corrupt so the caller can quarantine it.
  */
+/** Anything with Zod's safeParse (full or mini). */
+export interface Validator<T> {
+  safeParse(
+    data: unknown,
+  ): { success: true; data: T } | { success: false; error: { message: string } };
+}
+
 export type Migrations = Record<number, (data: unknown) => unknown>;
 
 export type Decoded<T> =
@@ -18,7 +23,7 @@ export function encode<T>(version: number, data: T): string {
 
 export function decode<T>(
   raw: string | null | undefined,
-  schema: z.ZodType<T>,
+  schema: Validator<T>,
   version: number,
   migrations: Migrations = {},
 ): Decoded<T> {

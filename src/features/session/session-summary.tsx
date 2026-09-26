@@ -53,9 +53,9 @@ export function SessionSummary({
           {callouts.map((c) => (
             <li
               key={c}
-              className="rounded-card border border-accent/40 bg-surface px-4 py-3 text-small"
+              className="rounded-card border border-border-strong bg-surface px-4 py-3 text-small"
             >
-              <span className="text-accent">New best</span> — {c}
+              <span className="font-medium text-text">New best</span> — {c}
             </li>
           ))}
         </ul>

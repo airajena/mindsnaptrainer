@@ -85,7 +85,7 @@ export function PhaseResult({ onRequestEnd }: { onRequestEnd: () => void }) {
             <p className="mt-2 text-text-muted" data-testid="accuracy">
               <span className="font-mono text-text tabular">{formatPercent(result.accuracy)}</span>{" "}
               accuracy
-              {result.perfect && <span className="ml-2 text-accent">Perfect</span>}
+              {result.perfect && <span className="ml-2 text-text">· Perfect</span>}
               {result.timedOut && <span className="ml-2 text-miss">Time ran out</span>}
             </p>
           </div>

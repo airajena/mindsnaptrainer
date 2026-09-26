@@ -1,20 +1,20 @@
-import { z } from "zod";
-import { SessionConfigSchema } from "./schema";
+import * as z from "zod/mini";
+import { ModeIdSchema, SessionConfigSchema } from "./schema";
 
 const ModeSummarySchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("fixed") }),
   z.object({
     kind: z.literal("capacity"),
-    threshold: z.number().nullable(),
-    spread: z.number().nullable(),
+    threshold: z.nullable(z.number()),
+    spread: z.nullable(z.number()),
     exposureMs: z.number(),
     track: z.array(z.number()),
     reversalIndexes: z.array(z.number()),
   }),
   z.object({
     kind: z.literal("speed"),
-    threshold: z.number().nullable(),
-    spread: z.number().nullable(),
+    threshold: z.nullable(z.number()),
+    spread: z.nullable(z.number()),
     cellCount: z.number(),
     track: z.array(z.number()),
     reversalIndexes: z.array(z.number()),
@@ -22,21 +22,21 @@ const ModeSummarySchema = z.discriminatedUnion("kind", [
 ]);
 
 const StoredRoundSchema = z.object({
-  index: z.number().int(),
-  boardSize: z.number().int(),
-  cellCount: z.number().int(),
+  index: z.int(),
+  boardSize: z.int(),
+  cellCount: z.int(),
   exposureTargetMs: z.number(),
   exposureActualMs: z.number(),
-  frames: z.number().int(),
+  frames: z.int(),
   seed: z.number(),
   pattern: z.string(),
   selection: z.string(),
-  hits: z.number().int(),
-  misses: z.number().int(),
-  falseTaps: z.number().int(),
+  hits: z.int(),
+  misses: z.int(),
+  falseTaps: z.int(),
   accuracy: z.number(),
   recallMs: z.number(),
-  firstTapMs: z.number().nullable(),
+  firstTapMs: z.nullable(z.number()),
   timedOut: z.boolean(),
   events: z.array(z.tuple([z.number(), z.number(), z.union([z.literal(0), z.literal(1)])])),
 });
@@ -44,18 +44,18 @@ const StoredRoundSchema = z.object({
 const StoredSessionSchema = z.object({
   id: z.string(),
   completedAt: z.number(),
-  modeId: SessionConfigSchema.shape.modeId,
+  modeId: ModeIdSchema,
   signature: z.string(),
   config: SessionConfigSchema,
   seed: z.number(),
-  counted: z.number().int(),
-  voids: z.number().int(),
+  counted: z.int(),
+  voids: z.int(),
   meanAccuracy: z.number(),
   meanHits: z.number(),
   meanTarget: z.number(),
-  perfectRounds: z.number().int(),
+  perfectRounds: z.int(),
   meanRecallMs: z.number(),
-  meanFirstTapMs: z.number().nullable(),
+  meanFirstTapMs: z.nullable(z.number()),
   mode: ModeSummarySchema,
   rounds: z.array(StoredRoundSchema),
 });
@@ -63,9 +63,9 @@ const StoredSessionSchema = z.object({
 const MonthlyAggregateSchema = z.object({
   month: z.string(),
   signature: z.string(),
-  modeId: SessionConfigSchema.shape.modeId,
-  sessions: z.number().int(),
-  rounds: z.number().int(),
+  modeId: ModeIdSchema,
+  sessions: z.int(),
+  rounds: z.int(),
   meanAccuracy: z.number(),
   bestMeanAccuracy: z.number(),
 });
@@ -74,6 +74,3 @@ export const HistorySchema = z.object({
   sessions: z.array(StoredSessionSchema),
   aggregates: z.array(MonthlyAggregateSchema),
 });
-
-export const HISTORY_KEY = "mindsnap:history";
-export const HISTORY_VERSION = 1;

@@ -14,13 +14,12 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --grep-invert \"@timing|@perf\" && playwright test --grep \"@timing|@perf\" --workers=1",
-    "lh": "lhci autorun"
+    "lh": "lhci autorun",
+    "check:bundles": "node scripts/check-bundles.mjs"
   },
   "dependencies": {
-    "geist": "^1.7.2",
     "idb-keyval": "^6.3.0",
     "lucide-react": "^1.48.0",
-    "motion": "^13.4.4",
     "next": "16.3.6",
     "radix-ui": "^1.6.7",
     "react": "19.3.0",
@@ -31,6 +30,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "2.5.14",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
@@ -41,6 +41,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.2",
     "fast-check": "^4.10.2",
+    "geist": "^1.7.2",
     "jsdom": "^30.1.1",
     "tailwindcss": "^4",
     "typescript": "^5",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SettingsButton } from "@/features/settings/settings-sheet";
+import { SettingsButton } from "@/features/settings/settings-button";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
 
@@ -10,7 +10,7 @@ export function AppHeader({ current }: { current: "train" | "progress" }) {
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex min-h-11 items-center rounded-button px-3 text-small font-medium hover:bg-surface-2",
+        "inline-flex min-h-11 items-center rounded-button px-2.5 text-small font-medium hover:bg-surface-2 sm:px-3",
         active ? "text-text" : "text-text-muted",
       )}
     >
@@ -24,7 +24,7 @@ export function AppHeader({ current }: { current: "train" | "progress" }) {
         className="-ml-1 inline-flex min-h-11 items-center gap-2 rounded-button px-1 font-medium"
       >
         <Logo className="size-6" />
-        <span>MindSnap</span>
+        <span className="max-[359px]:sr-only">MindSnap</span>
       </Link>
       <nav aria-label="App" className="flex items-center gap-1">
         {link("/train", "Train", current === "train")}

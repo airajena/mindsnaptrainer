@@ -1,27 +1,35 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
-/** Zod mirrors of engine types for persisted data. External data is `unknown` until parsed here. */
+/**
+ * Zod mirrors of engine types for persisted data. External data is `unknown`
+ * until parsed here. Uses `zod/mini` (tree-shakable functional API) to keep
+ * /train's first-load JS small — see DECISIONS D24.
+ */
+
+const int = (min: number, max: number) => z.int().check(z.minimum(min), z.maximum(max));
+const num = (min: number, max: number) => z.number().check(z.minimum(min), z.maximum(max));
 
 export const PatternStyleSchema = z.enum(["uniform", "spread", "clustered"]);
+export const ModeIdSchema = z.enum(["fixed", "capacity", "speed", "ladder", "endurance"]);
 
 export const SessionConfigSchema = z.object({
-  modeId: z.enum(["fixed", "capacity", "speed", "ladder", "endurance"]),
-  boardSize: z.number().int().min(4).max(12),
-  cellCount: z.number().int().min(2).max(72),
-  exposureMs: z.number().min(150).max(5000),
+  modeId: ModeIdSchema,
+  boardSize: int(4, 12),
+  cellCount: int(2, 72),
+  exposureMs: num(150, 5000),
   patternStyle: PatternStyleSchema,
   selectionLimit: z.boolean(),
   autoSubmit: z.boolean(),
-  recallLimitMs: z.number().positive().nullable(),
-  rounds: z.number().int().min(1).max(100),
+  recallLimitMs: z.nullable(z.number().check(z.positive())),
+  rounds: int(1, 100),
   feedback: z.enum(["each-round", "end"]),
   roundStart: z.enum(["tap", "auto"]),
-  passThreshold: z.number().min(0.5).max(1),
+  passThreshold: num(0.5, 1),
 });
 
 export const SavedPresetSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1).max(40),
+  id: z.string().check(z.minLength(1)),
+  name: z.string().check(z.minLength(1), z.maxLength(40)),
   config: SessionConfigSchema,
   createdAt: z.number(),
 });
@@ -36,9 +44,6 @@ export const SettingsSchema = z.object({
   reducedMotion: z.enum(["system", "reduce"]),
   lastConfig: SessionConfigSchema,
   lastTab: z.enum(["presets", "tests", "custom"]),
-  savedPresets: z.array(SavedPresetSchema).max(20),
+  savedPresets: z.array(SavedPresetSchema).check(z.maxLength(20)),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
-
-export const SETTINGS_KEY = "mindsnap:settings";
-export const SETTINGS_VERSION = 1;

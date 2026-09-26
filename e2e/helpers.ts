@@ -29,9 +29,18 @@ export async function startSession(page: Page, presetName: string, seed = SEED) 
  * frames, which (correctly) voids the round; then replay, like a player
  * would, and the next attempt's seed applies. Returns the attempt reached.
  */
-export async function reachRecall(page: Page, startAttempt = 0): Promise<number> {
+export async function reachRecall(
+  page: Page,
+  startAttempt = 0,
+  exposureMs = 1500,
+): Promise<number> {
   let attempt = startAttempt;
+  // Standard countdown (1.2 s) + fixation (0.3 s) + exposure. Sitting still
+  // meanwhile matters: polling the page during the exposure can cost a
+  // frame in Firefox at 144 Hz and void the round.
+  const timedMs = 1500 + exposureMs + 300;
   await page.getByRole("button", { name: /^Start round/ }).click();
+  await page.waitForTimeout(timedMs);
   for (;;) {
     const recall = page.getByText("Select the squares", { exact: true });
     const voided = page.getByRole("button", { name: "Replay round" });
@@ -40,6 +49,7 @@ export async function reachRecall(page: Page, startAttempt = 0): Promise<number>
     attempt++;
     await voided.click();
     await page.getByRole("button", { name: /^Start round/ }).click();
+    await page.waitForTimeout(timedMs);
   }
 }
 
@@ -50,7 +60,7 @@ export async function playPerfectRound(
   index: number,
   startAttempt = 0,
 ) {
-  const attempt = await reachRecall(page, startAttempt);
+  const attempt = await reachRecall(page, startAttempt, config.exposureMs);
   const board = page.getByRole("grid");
   for (const c of expectedPattern(config, SEED, index, attempt))
     await board.locator(`[data-cell="${c}"]`).click();

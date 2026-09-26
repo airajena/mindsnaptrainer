@@ -15,7 +15,7 @@ export function AppEffects() {
   const notices = useStore(noticeStore, (s) => s.notices);
 
   useEffect(() => {
-    hydrateSettings();
+    void hydrateSettings();
   }, []);
 
   useEffect(() => {

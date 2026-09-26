@@ -18,7 +18,7 @@
   /* Text */
   --text: #f3f5f7;
   --text-muted: #a0a8b4;
-  --text-faint: #6b7380;
+  --text-faint: #7d8593; /* was #6b7380 in TECH_PLAN; raised to 4.5:1 on every surface (D26) */
 
   /* Accent: used only for lit/selected cells and primary actions */
   --accent: #3cf2b8;
@@ -73,7 +73,7 @@
   --border-strong: #c9ced6;
   --text: #0b0d10;
   --text-muted: #4a525e;
-  --text-faint: #6b7380;
+  --text-faint: #5f6773; /* 4.5:1+ on the light surfaces (D26) */
   --accent: #00a57a;
   --accent-hover: #008f6a;
   --accent-ink: #ffffff;

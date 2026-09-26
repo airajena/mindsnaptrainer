@@ -1,32 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DEFAULT_SESSION_CONFIG, normalizeSessionConfig } from "@/engine/config";
-import { presetSignature } from "@/engine/presets";
+import { findPreset } from "@/engine/presets";
 import type { SessionConfig } from "@/engine/types";
-import {
-  MAX_SAVED_PRESETS,
-  savePreset,
-  settingsStore,
-  updateSettings,
-} from "@/stores/settings-store";
+import { MAX_SAVED_PRESETS, settingsStore, updateSettings } from "@/stores/settings-store";
 import { ConfigForm } from "./config-form";
 import { DifficultyReadout } from "./difficulty-readout";
 import { PresetPicker } from "./preset-picker";
 import { PreviewBoard } from "./preview-board";
 import { TestPicker } from "./test-picker";
 import "./setup.css";
+
+// Radix Dialog loads on demand (prefetched at idle by TrainScreen).
+const SavePresetDialog = dynamic(
+  () => import("./save-preset-dialog").then((m) => m.SavePresetDialog),
+  { ssr: false },
+);
 
 type Tab = "presets" | "tests" | "custom";
 
@@ -45,12 +40,37 @@ export function SetupScreen({ onStart }: { onStart: (config: SessionConfig) => v
   const [fixed, setFixed] = useState<SessionConfig>(settingsStore.getState().lastConfig);
   const [test, setTest] = useState<SessionConfig>(DEFAULT_TEST);
   const [saveOpen, setSaveOpen] = useState(false);
+  // Set once the visitor (or a deep link) picks something. Settings load
+  // asynchronously, and a late restore must never overwrite their choice.
+  const touched = useRef(false);
   const restored = useRef(false);
 
-  // Restore once settings have loaded from storage (after mount).
+  // Deep links from the landing / progress pages apply immediately:
+  // /train?test=capacity|speed, ?tab=custom, ?preset=<id>.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const test = params.get("test");
+    const preset = findPreset(params.get("preset") ?? "");
+    if (test === "capacity" || test === "speed") {
+      setTest((c) => normalizeSessionConfig({ ...c, modeId: test }));
+      setTab("tests");
+    } else if (params.get("tab") === "custom") {
+      setTab("custom");
+    } else if (preset) {
+      setFixed(preset.config);
+      setTab("presets");
+    } else {
+      return;
+    }
+    touched.current = true;
+  }, []);
+
+  // Restore the last used config once settings have loaded — unless the
+  // visitor has already made a choice.
   useEffect(() => {
     if (!hydrated || restored.current) return;
     restored.current = true;
+    if (touched.current) return;
     const { lastConfig, lastTab } = settingsStore.getState();
     if (lastConfig.modeId === "capacity" || lastConfig.modeId === "speed") {
       setTest(lastConfig);
@@ -62,11 +82,20 @@ export function SetupScreen({ onStart }: { onStart: (config: SessionConfig) => v
   }, [hydrated]);
 
   const config = tab === "tests" ? test : fixed;
-  const patchFixed = (p: Partial<SessionConfig>) =>
+  const patchFixed = (p: Partial<SessionConfig>) => {
+    touched.current = true;
     setFixed((c) => normalizeSessionConfig({ ...c, ...p, modeId: "fixed" }));
-  const patchTest = (p: Partial<SessionConfig>) =>
+  };
+  const patchTest = (p: Partial<SessionConfig>) => {
+    touched.current = true;
     setTest((c) => normalizeSessionConfig({ ...c, ...p }));
+  };
+  const pickPreset = (c: SessionConfig) => {
+    touched.current = true;
+    setFixed(c);
+  };
   const changeTab = (t: string) => {
+    touched.current = true;
     setTab(t as Tab);
     updateSettings({ lastTab: t as Tab });
   };
@@ -92,7 +121,7 @@ export function SetupScreen({ onStart }: { onStart: (config: SessionConfig) => v
               <TabsTrigger value="custom">Custom</TabsTrigger>
             </TabsList>
             <TabsContent value="presets">
-              <PresetPicker config={fixed} onPick={(c) => setFixed(c)} />
+              <PresetPicker config={fixed} onPick={pickPreset} />
             </TabsContent>
             <TabsContent value="tests">
               <TestPicker config={test} onChange={patchTest} />
@@ -131,57 +160,7 @@ export function SetupScreen({ onStart }: { onStart: (config: SessionConfig) => v
         </Button>
       </div>
 
-      <SavePresetDialog open={saveOpen} onOpenChange={setSaveOpen} config={fixed} />
+      {saveOpen && <SavePresetDialog open onOpenChange={setSaveOpen} config={fixed} />}
     </div>
-  );
-}
-
-function SavePresetDialog({
-  open,
-  onOpenChange,
-  config,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  config: SessionConfig;
-}) {
-  const [name, setName] = useState("");
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogTitle>Save preset</DialogTitle>
-        <DialogDescription>
-          {presetSignature(config)} · {config.rounds} rounds
-        </DialogDescription>
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            savePreset(name || presetSignature(config), config);
-            setName("");
-            onOpenChange(false);
-          }}
-        >
-          <label className="flex flex-col gap-2 text-small text-text-muted">
-            Name
-            <input
-              value={name}
-              maxLength={40}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={presetSignature(config)}
-              className="h-12 rounded-button border border-border bg-surface-2 px-3 text-body text-text placeholder:text-text-faint"
-            />
-          </label>
-          <DialogFooter>
-            <Button variant="secondary" size="lg" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" size="lg">
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }

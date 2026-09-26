@@ -1,34 +1,30 @@
 "use client";
 
-import { SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { useStore } from "zustand";
 import { Button } from "@/components/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import { SwitchRow } from "@/features/setup/field";
 import { safeLocal } from "@/platform/storage/local";
-import { clearHistory } from "@/stores/history-store";
 import { pushNotice } from "@/stores/notice-store";
 import { resetSettings, settingsStore, updateSettings } from "@/stores/settings-store";
 
-/** Settings (PRD §11.9) in a sheet: bottom on phones, right-hand on wider screens. */
-export function SettingsButton() {
-  const [open, setOpen] = useState(false);
+/**
+ * Settings (PRD §11.9) in a sheet: bottom on phones, right-hand on wider
+ * screens. Loaded on demand by <SettingsButton> (settings-button.tsx).
+ */
+export function SettingsSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="grid size-11 place-items-center rounded-button text-text-muted hover:bg-surface-2 hover:text-text">
-        <SettingsIcon className="size-5" aria-hidden />
-        <span className="sr-only">Settings</span>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="sheet">
         <SettingsBody />
       </DialogContent>
@@ -126,6 +122,7 @@ function SettingsBody() {
 }
 
 export async function deleteAllData(): Promise<void> {
+  const { clearHistory } = await import("@/stores/history-store");
   await clearHistory();
   for (const key of safeLocal.keys()) {
     if (key.startsWith("mindsnap:") || key.startsWith("quarantine:")) safeLocal.remove(key);
