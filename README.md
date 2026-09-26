@@ -5,8 +5,10 @@
 A mobile-first web app for training rapid visual memory: a grid flashes a
 pattern for a precise time, it disappears, and you rebuild it from memory.
 Frame-accurate exposure timing, adaptive capacity/speed tests, and honest
-per-round feedback — no account, no tracking, everything stays on your
-device. See [docs/PRD.md](docs/PRD.md) for the full product rationale.
+per-round feedback — no account, and your training data never leaves your
+device (see [docs/adr/0007](docs/adr/0007-add-cookieless-page-view-analytics.md)
+for the one disclosed, cookieless exception: anonymous page-view counts).
+See [docs/PRD.md](docs/PRD.md) for the full product rationale.
 
 This is an independent, open-source project. It is not affiliated with, and
 does not claim affiliation with, Matiks or any other game or company.

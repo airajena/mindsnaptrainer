@@ -87,6 +87,6 @@ Latency breakdown (CDP touch, Pixel 7 emulation): our handler + React commit is 
 - [x] Settings, presets and history survive reload; delete-all wipes them (`e2e/persistence.spec.ts`).
 - [x] Keyboard-only session round (`e2e/session.spec.ts`).
 - [ ] Lighthouse mobile ≥ 95 in all four categories on landing — **A11y/BP/SEO 100; Performance median 0.93 (0.91–0.96), see D22/D28.**
-- [x] No third-party network requests at runtime (`e2e/landing.spec.ts`, all pages).
+- [x] No third-party network requests at runtime (`e2e/landing.spec.ts`, all pages). **Superseded post-V1.0** by the disclosed exception in [ADR-0007](adr/0007-add-cookieless-page-view-analytics.md): Vercel Analytics' script and beacon hosts are now allow-listed in that same test, nothing else is.
 
 **Deferred to V1.1 (per PRD)**: Road to 18, endurance, heatmap, insights, tap-order replay, technique tips, PWA offline + install (service worker), light theme, sounds, export/import.

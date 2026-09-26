@@ -477,7 +477,7 @@ Server-issued seeds and server-side timing sanity checks, leaderboards per confi
 | # | Question / risk | Current stance |
 |---|---|---|
 | 1 | Trademark risk around "Mind Snap" | Check before public launch; rebrand candidates listed |
-| 2 | Cookieless aggregate analytics in V1.1? | Default no; revisit if we need usage data. Must stay cookieless and be disclosed |
+| 2 | Cookieless aggregate analytics in V1.1? | **Resolved post-V1.0**: added Vercel Analytics (cookieless page views only, no cross-site tracking or identification). Disclosed on `/privacy` and in the landing FAQ; never sees anything from inside a training session. See [ADR-0007](adr/0007-add-cookieless-page-view-analytics.md). |
 | 3 | Pass threshold 0.90 for staircases — too strict/lenient at small k? | Validate with testers; make it an advanced setting |
 | 4 | Swipe-to-paint default on — accidental paints? | Default on; watch tester feedback |
 | 5 | Does the competition format limit selections to k? | Default limit on in the Competition preset; configurable |

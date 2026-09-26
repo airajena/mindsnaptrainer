@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { SITE } from "@/lib/site";
 import { mono, sans } from "./fonts";
@@ -33,7 +34,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Cookieless page-view counts only (no cross-site tracking, no
+            fingerprinting, no ad identifiers) — see docs/adr/0005 and the
+            privacy page for what this changes about the on-device-only
+            promise. */}
+        <Analytics />
+      </body>
     </html>
   );
 }

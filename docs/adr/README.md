@@ -24,6 +24,7 @@ It's a complement to [DECISIONS.md](../DECISIONS.md), not a replacement:
 | [0004](0004-bundle-budgets-over-prd-totals.md) | Enforce app-code bundle budgets in CI instead of unattainable PRD totals | Accepted |
 | [0005](0005-on-device-storage-only-v1.md) | On-device storage only in V1; sync deferred to V2 | Accepted |
 | [0006](0006-automatic-round-start-no-per-round-countdown.md) | Automatic round start removes the per-round countdown and delay | Accepted |
+| [0007](0007-add-cookieless-page-view-analytics.md) | Add cookieless page-view analytics (Vercel Analytics) — narrows ADR-0005 | Accepted |
 
 ## Format
 

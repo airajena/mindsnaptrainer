@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy & about",
   description:
-    "What MindSnap Trainer stores (only on your device), where, and how to delete it. An independent practice tool.",
+    "What MindSnap Trainer stores (only on your device), the one anonymous exception, and how to delete it. An independent practice tool.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -16,8 +16,8 @@ export default function PrivacyPage() {
         <p className="label-caps text-label text-text-muted">Privacy &amp; about</p>
         <h1 className="text-h1">Your data stays on your device.</h1>
         <p className="text-text-muted">
-          No account, no cookies, no analytics, no ads. The app makes no requests to anyone else
-          while you use it.
+          No account, no cookies, no ads, no cross-site tracking. Your training data never leaves
+          this device — the only exception is a cookieless page-view count, explained below.
         </p>
       </header>
 
@@ -40,9 +40,21 @@ export default function PrivacyPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-h2">Where it goes</h2>
         <p className="text-text-muted">
-          Nowhere. It never leaves this device. There's no server, no sync and no backup — so
-          clearing your browser data, or using a different browser or device, starts fresh. Fonts
-          and every other asset are served from this site; there are no third-party requests.
+          Your settings, presets and session history never leave this device. There's no server, no
+          sync and no backup — so clearing your browser data, or using a different browser or
+          device, starts fresh. Fonts and every other UI asset are served from this site.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-h2">The one exception: anonymous page views</h2>
+        <p className="text-text-muted">
+          This site uses Vercel's cookieless web analytics to count page views and see which pages
+          get used. It doesn't use cookies, doesn't fingerprint your device, doesn't carry an
+          advertising identifier, and can't identify you individually. It never sees anything from
+          inside a training session — no patterns, no taps, no scores, no history. That data stays
+          on-device as described above and is technically incapable of reaching this or any other
+          analytics service.
         </p>
       </section>
 

@@ -6,7 +6,12 @@ export const HERO = {
   sub: "A pattern flashes. It disappears. You rebuild it. Frame-accurate timing, adaptive training and honest stats, so you actually get better.",
   primary: "Start training",
   secondary: "Try it right here",
-  proof: ["Frame-accurate timing", "No sign-up", "Works offline", "Nothing leaves your device"],
+  proof: [
+    "Frame-accurate timing",
+    "No sign-up",
+    "Works offline",
+    "Your training data stays on-device",
+  ],
 } as const;
 
 export const STEPS = [
@@ -79,6 +84,10 @@ export const FAQ = [
     a: "No. Your history is stored in this browser on this device. You can wipe it any time from Settings.",
   },
   {
+    q: "Do you track me?",
+    a: "No. We use a cookieless page-view counter to see which pages get used — it can't identify you and never sees anything from inside a session (no patterns, taps, scores or history). That data never leaves your device.",
+  },
+  {
     q: "Is this the official Mind Snap?",
     a: "No. MindSnap Trainer is an independent practice tool. It isn't affiliated with Matiks or any other game.",
   },
@@ -98,5 +107,5 @@ export const FAQ = [
 
 export const PRIVACY = {
   headline: "No account. No cookies. No tracking.",
-  body: "Your history lives on your device, and you can wipe it with one tap.",
+  body: "Your history lives on your device, and you can wipe it with one tap. The only thing we ever see is an anonymous page view — never anything from inside a session.",
 } as const;

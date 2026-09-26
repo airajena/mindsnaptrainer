@@ -29,6 +29,12 @@ without a painful migration.
   (`e2e/landing.spec.ts`, "no third-party requests on any page") that fails
   CI if one is ever introduced.
 
+  > **Post-V1.0 update:** [ADR-0007](0007-add-cookieless-page-view-analytics.md)
+  > narrows this specific claim by adding a disclosed, cookieless page-view
+  > counter. Training data itself is still never transmitted anywhere — that
+  > guarantee is unchanged and still enforced structurally, not just by
+  > policy. Read ADR-0007 for exactly what changed and what didn't.
+
 ## Consequences
 
 **Positive**

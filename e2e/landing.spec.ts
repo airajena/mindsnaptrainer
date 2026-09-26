@@ -89,12 +89,28 @@ test("privacy page and 404 render", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Nothing flashed here." })).toBeVisible();
 });
 
-test("no third-party requests on any page", async ({ page, baseURL }) => {
+// Vercel Analytics (see docs/adr/0005) is a disclosed, cookieless exception:
+// it counts page views only, with no cross-site tracking, fingerprinting or
+// ad identifiers. Its script and its beacon each live on their own host, so
+// both are allow-listed by exact hostname — anything else foreign still
+// fails this test.
+const ALLOWED_THIRD_PARTY_HOSTS = ["va.vercel-scripts.com", "vitals.vercel-insights.com"];
+
+test("no third-party requests on any page, other than the disclosed analytics beacon", async ({
+  page,
+  baseURL,
+}) => {
   const origin = new URL(baseURL!).origin;
   const foreign: string[] = [];
   page.on("request", (req) => {
     const url = new URL(req.url());
-    if (url.protocol.startsWith("http") && url.origin !== origin) foreign.push(req.url());
+    if (
+      url.protocol.startsWith("http") &&
+      url.origin !== origin &&
+      !ALLOWED_THIRD_PARTY_HOSTS.includes(url.hostname)
+    ) {
+      foreign.push(req.url());
+    }
   });
   for (const path of ["/", "/train", "/progress", "/privacy"]) {
     await page.goto(path);
