@@ -26,7 +26,7 @@ const ConfirmDialog = dynamic(
 );
 const prefetchDialogs = () => {
   void import("@/components/confirm-dialog");
-  void import("@/features/settings/settings-sheet");
+  void import("@/features/setup/settings/settings-sheet");
   void import("@/features/setup/save-preset-dialog");
 };
 

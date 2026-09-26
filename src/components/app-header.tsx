@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SettingsButton } from "@/features/settings/settings-button";
+import { SettingsButton } from "@/features/setup/settings/settings-button";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
 
