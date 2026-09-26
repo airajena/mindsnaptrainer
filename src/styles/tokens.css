@@ -47,7 +47,7 @@
 
   /* Layout */
   --gutter: 16px;
-  --section-space: clamp(4rem, 3rem + 6vw, 8rem);
+  --section-space: clamp(2.5rem, 2rem + 2.5vw, 4rem);
 }
 
 @media (min-width: 768px) {

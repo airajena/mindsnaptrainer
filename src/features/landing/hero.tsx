@@ -9,7 +9,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="grid items-center gap-10 pt-8 pb-16 md:pt-16 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16 lg:pt-24"
+      className="grid items-center gap-10 pt-6 pb-10 md:pt-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16 lg:pt-12"
     >
       <div className="flex flex-col gap-6">
         <p className="label-caps text-label text-text-muted">{HERO.eyebrow}</p>
