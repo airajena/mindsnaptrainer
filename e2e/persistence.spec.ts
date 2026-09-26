@@ -2,6 +2,12 @@ import { expect, test } from "@playwright/test";
 import { playPerfectRound, warmUp } from "./helpers";
 
 test.skip(({ isMobile }) => isMobile, "storage behaviour is engine-level; desktop covers it");
+// See e2e/session.spec.ts: headless WebKit on Linux CI never completes an
+// exposure, and both tests here play at least one full round.
+test.skip(
+  ({ browserName }) => browserName === "webkit" && !!process.env.CI,
+  "headless WebKit on Linux CI never completes an exposure (D14-style carve-out)",
+);
 
 test("history, presets and settings survive reload; delete-all wipes them", async ({ page }) => {
   test.setTimeout(90_000);
