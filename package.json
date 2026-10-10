@@ -20,9 +20,9 @@
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "idb-keyval": "^6.3.0",
-    "lucide-react": "^1.48.0",
-    "next": "16.3.6",
-    "radix-ui": "^1.6.7",
+    "lucide-react": "^1.52.0",
+    "next": "16.4.0",
+    "radix-ui": "^1.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.5",
